@@ -1,0 +1,17 @@
+{
+  "name": "@khaib10/tornado",
+  "version": "1.0.0",
+  "description": "Chaos engineering for AI agents: inject the real failures that break them — tools vanishing, prompt truncation, tool calls turned to text, latency, errors — and see if your agent survives or fabricates.",
+  "type": "module",
+  "bin": { "tornado": "bin/tornado.js" },
+  "main": "src/server.js",
+  "exports": { ".": "./src/server.js", "./faults": "./src/faults.js" },
+  "files": ["bin", "src", "README.md", "LICENSE"],
+  "engines": { "node": ">=18.17" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "keywords": ["llm", "agents", "chaos-engineering", "resilience", "testing", "prompt-injection", "tool-calling", "ollama"],
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "git+https://github.com/KhaiB10/tornado.git" },
+  "author": "Khai Bustos",
+  "license": "MIT"
+}
