@@ -39,6 +39,35 @@ THROUGH TORNADO tool_blackout=1:  -> NO TOOL CALL. content: "```bash\nsha256sum 
 
 With the tools gone, the model stops calling and starts *describing* — the action never happens. An agent that assumed the call fired now proceeds on a result that doesn't exist. (Under a system prompt that pushes for a final answer, models go further and fabricate the hash outright — 8/8 in the benchmark above.) Tornado is how you find that in a test instead of in production.
 
+## In CI — the resilience gate
+
+Run your agent's tests under injected faults on every PR, and fail the build if the
+agent breaks or fabricates. Point your agent at `$OPENAI_BASE_URL` (Tornado exports it):
+
+```yaml
+# .github/workflows/agent-resilience.yml
+name: agent-resilience
+on: [pull_request]
+jobs:
+  tornado:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: KhaiB10/tornado@v1
+        with:
+          upstream: https://api.openai.com          # your real model API
+          faults: "tool_blackout=0.3 naked_tool_call=0.2 http_error=0.05"
+          command: "npm run test:agent"              # your agent tests, hitting $OPENAI_BASE_URL
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+The gate passes when your command exits 0 (the agent coped) and fails when it doesn't
+(the agent broke under the faults). Set `seed:` for a reproducible run. The step's log
+shows exactly which faults fired.
+
 ## Use it
 
 ```bash

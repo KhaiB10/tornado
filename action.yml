@@ -1,0 +1,35 @@
+name: 'Tornado — AI agent resilience gate'
+description: 'Run your AI agent tests under injected model failures. Fails the build if your agent breaks or fabricates when the model misbehaves.'
+branding:
+  icon: 'wind'
+  color: 'purple'
+inputs:
+  upstream:
+    description: 'The real model API base URL (e.g. https://api.openai.com or http://127.0.0.1:11434).'
+    required: true
+  faults:
+    description: 'Space-separated faults to inject, e.g. "tool_blackout=0.3 naked_tool_call=0.2 http_error=0.05".'
+    required: true
+  command:
+    description: 'Your agent/test command. Point your agent at $TORNADO_URL (also exported as OPENAI_BASE_URL / OPENAI_API_BASE).'
+    required: true
+  port:
+    description: 'Local port for the tornado proxy.'
+    required: false
+    default: '8100'
+  seed:
+    description: 'Seed for reproducible fault injection (leave empty for random).'
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        TORNADO_BIN: ${{ github.action_path }}/bin/tornado.js
+        TORNADO_UPSTREAM: ${{ inputs.upstream }}
+        TORNADO_FAULTS: ${{ inputs.faults }}
+        TORNADO_COMMAND: ${{ inputs.command }}
+        TORNADO_PORT: ${{ inputs.port }}
+        TORNADO_SEED: ${{ inputs.seed }}
+      run: bash "${{ github.action_path }}/action-entrypoint.sh"
